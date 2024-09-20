@@ -14,10 +14,10 @@ function question(query: string): Promise<string> {
 export async function init() {
   console.log('Welcome to the Elevation Team Translation CLI!');
 
-  const baseLocale = await question('Enter the base locale (e.g., en): ');
-  const inputDir = await question('Enter the input directory for translation files (e.g., src/translations): ');
-  const outputDir = await question('Enter the output directory for generated translation files (e.g., src/translations): ');
-  const format = await question('Enter the output format (e.g., json, js): ');
+  let baseLocale = (await question('Enter the base locale (e.g., en) [default: en]: ')) || 'en';
+  let inputDir = (await question('Enter the input directory for translation files (e.g., src/translations) [default: src/translations]: ')) || 'src/translations';
+  let outputDir = (await question('Enter the output directory for generated translation files (e.g., src/translations) [default: src/translations]: ')) || 'src/translations';
+  let format = (await question('Enter the output format (e.g., json, js) [default: json]: ')) || 'json';
 
   let locales: string[] = [];
   let addMore = true;
@@ -42,18 +42,16 @@ export async function init() {
 
   // Content for the configuration file
   const configContent = `
-    export const translationConfig = {
-      baseLocale: ${baseLocale}, // Base language for translations
-      languages: [
-        '${baseLocale}',
-        ${locales.map(locale => `'${locale}'`).join(',\n  ')}
-      ], // Target languages for translations
-      inputDir: '${inputDir}', // Directory for the base translation files
-      outputDir: '${outputDir}', // Directory for the generated translation files
-      format: '${format}', // Output format (e.g., json, js)
-      aiProvider: '${aiProvider}', // AI provider for translations
-    };
-  `;
+export const translationConfig = {
+  baseLocale: ${baseLocale}, // Base language for translations
+  languages: ['${baseLocale}', ${locales.map(locale => `'${locale}'`).join(', ')}], // Target languages for translations
+  inputDir: '${inputDir}', // Directory for the base translation files
+  outputDir: '${outputDir}', // Directory for the generated translation files
+  format: '${format}', // Output format (e.g., json, js)
+  aiProvider: '${aiProvider}', // AI provider for translations
+};
+
+`;
 
   // Create the configuration file
   fs.writeFileSync(configPath, configContent);
