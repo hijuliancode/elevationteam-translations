@@ -1,1 +1,4 @@
-npx --no -- commitlint --edit $1
+#!/bin/sh
+if [ "$CI" != "true" ]; then
+  npx --no -- commitlint --edit $1
+fi
