@@ -1,3 +1,10 @@
+## [0.1.2](https://github.com/hijuliancode/elevationteam-translations/compare/v0.1.1...v0.1.2) (2024-09-20)
+
+
+### Bug Fixes
+
+* adding the default values to installing process ([671578b](https://github.com/hijuliancode/elevationteam-translations/commit/671578b9c16bc9b5ef83861797492668d3778240))
+
 ## [0.1.1](https://github.com/hijuliancode/elevationteam-translations/compare/v0.1.0...v0.1.1) (2024-09-20)
 
 
