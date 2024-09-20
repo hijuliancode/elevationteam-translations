@@ -1,6 +1,6 @@
 {
   "name": "@elevationteam/translations",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An agnostic and flexible translation library for web and mobile projects. It allows for easy initialization, custom language configuration, and AI-based automatic translation. Compatible with React, Next.js, React Native, and more.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
