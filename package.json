@@ -4,7 +4,8 @@
   "description": "An agnostic and flexible translation library for web and mobile projects. It allows for easy initialization, custom language configuration, and AI-based automatic translation. Compatible with React, Next.js, React Native, and more.",
   "main": "index.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "prepare": "husky"
   },
   "type": "module",
   "repository": {
@@ -29,6 +30,7 @@
   "homepage": "https://github.com/hijuliancode/elevationteam-translations#readme",
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
-    "@commitlint/config-conventional": "^19.5.0"
+    "@commitlint/config-conventional": "^19.5.0",
+    "husky": "^9.1.6"
   }
 }
