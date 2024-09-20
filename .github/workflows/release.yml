@@ -32,5 +32,5 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN_ET_UTILS }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN_ET_TRANSLATIONS }}
         run: npx semantic-release
