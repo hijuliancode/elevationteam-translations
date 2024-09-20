@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { translate } from './translate';
+import { openAIClient } from './translate';
 
 export async function watch(config: any) {
   const { baseLocale, locales, inputDir, outputDir, format } = config;
@@ -40,7 +40,7 @@ export async function watch(config: any) {
           for (const [key, value] of Object.entries(baseContent)) {
             // Only update if the key doesn't exist or the translation is outdated
             if (!existingTranslations[key] || existingTranslations[key] !== value) {
-              updatedTranslations[key] = await translate(value as string, locale);
+              updatedTranslations[key] = await openAIClient.translate(value as string, locale);
             }
           }
 

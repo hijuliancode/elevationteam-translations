@@ -1,1 +1,13 @@
+# .gitignore
+.DS_Store
 node_modules
+*.log
+dist
+dist-ssr
+*.local
+.env
+.cache
+.env.local
+.npmrc
+.idea/
+.vscode/
