@@ -1,0 +1,30 @@
+{
+  "name": "@elevationteam/translations",
+  "version": "0.0.0",
+  "description": "An agnostic and flexible translation library for web and mobile projects. It allows for easy initialization, custom language configuration, and AI-based automatic translation. Compatible with React, Next.js, React Native, and more.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hijuliancode/elevationteam-translations.git"
+  },
+  "keywords": [
+    "elevationteam",
+    "translations",
+    "i18n",
+    "javascript",
+    "typescript",
+    "react",
+    "angular",
+    "nodejs"
+  ],
+  "author": "hijuliancode (https://github.com/hijuliancode)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hijuliancode/elevationteam-translations/issues"
+  },
+  "homepage": "https://github.com/hijuliancode/elevationteam-translations#readme"
+}
