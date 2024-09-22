@@ -10,7 +10,7 @@ export async function watch(config: TranslationConfig): Promise<void> {
 
   if (!fs.existsSync(baseFilePath)) {
     console.error(`Base file not found: ${baseFilePath}`);
-    return;
+    process.exit(1);
   }
 
   fs.watch(baseFilePath, async (eventType) => {
@@ -36,7 +36,7 @@ export async function watch(config: TranslationConfig): Promise<void> {
 
           if (keysToTranslate.length > 0) {
             const translations = await Promise.all(
-              keysToTranslate.map(({ value }) => openAIClient.translate(value, language))
+              keysToTranslate.map(({ value }) => openAIClient.translate(value as string, language))
             );
 
             const updatedTranslations = { ...existingTranslations };

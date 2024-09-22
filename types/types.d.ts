@@ -8,5 +8,6 @@ export interface TranslationConfig {
 }
 
 export interface BaseContent {
-  [key: string]: string;
+  [key: string]: string | BaseContent; // Soporta anidamiento
 }
+

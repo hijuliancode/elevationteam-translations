@@ -27,10 +27,12 @@ class OpenAIClient {
       });
 
       console.log('OpenAI response:', response);
+      console.log('response.choices:', response.choices);
+      console.log('response.choices[0]?.message:', response.choices[0]?.message);
       return response.choices[0]?.message?.content?.trim() || '';
     } catch (error) {
       console.error('Error translating text', error);
-      return '';
+      process.exit(1);
     }
   }
 }

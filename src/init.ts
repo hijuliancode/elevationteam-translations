@@ -14,23 +14,40 @@ function question(query: string): Promise<string> {
 export async function init() {
   console.log('Welcome to the Elevation Team Translation CLI!');
 
-  let defaultLanguage = (await question('Enter the base locale (e.g., en) [default: en]: ')) || 'en';
-  let inputDir = (await question('Enter the input directory for translation files (e.g., src/translations) [default: src/translations]: ')) || 'src/translations';
-  let outputDir = (await question('Enter the output directory for generated translation files (e.g., src/translations) [default: src/translations]: ')) || 'src/translations';
-  let format = (await question('Enter the output format (e.g., json, js) [default: json]: ')) || 'json';
+  let defaultLanguage = (await question('Enter the base locale (en): ')) || 'en';
+  const languagesInput = await question('Enter target locales separated by space or comma (es): ') || 'es';
+  const languages = languagesInput.split(/[\s,]+/).filter(locale => locale);
 
-  const localesInput = await question('Enter target locales separated by space or comma (e.g., fr, es, de): ');
-  const languages = localesInput.split(/[\s,]+/).filter(locale => locale);
+  // Ensure the languages array has at least one language
+  if (languages.length === 0) {
+    languages.push(defaultLanguage);
+  }
 
-  const configPath = path.join(process.cwd(), 'translation.config.ts');
-
-  // Check if the config file already exists
-  if (fs.existsSync(configPath)) {
-    console.log('Config file already exists at translation.config.ts');
+  // Check if the default language is included in the target languages
+  if (languages.includes(defaultLanguage)) {
+    console.log('Warning: The base language is also included in the target languages. Please select a different base language.');
     return;
   }
 
-  const aiProvider = await question('¿Qué proveedor de IA desea usar para las traducciones? (openai): ');
+  // Check if the target languages are the same
+  if (languages.length === 1 && languages[0] === defaultLanguage) {
+    console.log('Warning: The target language is the same as the base language. Please select a different target language.');
+    return;
+  }
+
+  let inputDir = (await question('Enter the input directory when the baseFile is located (src/translations): ')) || 'src/translations';
+  let outputDir = (await question('Enter the output directory for generated translation files (src/translations): ')) || 'src/translations';
+  let format = (await question('Enter the output format js or json (json): ')) || 'json';
+
+  const configPath = path.join(process.cwd(), 'translation.config.js');
+
+  // Check if the config file already exists
+  if (fs.existsSync(configPath)) {
+    console.log('Config file already exists at translation.config.js');
+    return;
+  }
+
+  const aiProvider = (await question('Which AI provider do you want to use for translations? (openai): ')) || 'openai';
 
   // Content for the configuration file
   const configContent = `
@@ -47,7 +64,7 @@ export const translationConfig = {
 
   // Create the configuration file
   fs.writeFileSync(configPath, configContent);
-  console.log('Config file created successfully at translation.config.ts');
+  console.log('Config file created successfully at translation.config.js');
 
   // Check if package.json exists before modifying it
   const packageJsonPath = path.join(process.cwd(), 'package.json');
@@ -64,7 +81,7 @@ export const translationConfig = {
 
   // Add the "translation:watch" script to automatically watch for changes
   if (!packageJson.scripts['translation:watch']) {
-    packageJson.scripts['translation:watch'] = '@elevationteam/translations watch';
+    packageJson.scripts['translation:watch'] = 'et-translations watch';
     console.log('Script "translation:watch" added to package.json');
   } else {
     console.log('Script "translation:watch" already exists in package.json');
@@ -72,7 +89,7 @@ export const translationConfig = {
 
   // Add the "translation:run" script to manually run translations
   if (!packageJson.scripts['translation:run']) {
-    packageJson.scripts['translation:run'] = '@elevationteam/translations run';
+    packageJson.scripts['translation:run'] = 'et-translations run';
     console.log('Script "translation:run" added to package.json');
   } else {
     console.log('Script "translation:run" already exists in package.json');
@@ -80,4 +97,6 @@ export const translationConfig = {
 
   // Save changes to package.json
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+
+  rl.close();
 }
