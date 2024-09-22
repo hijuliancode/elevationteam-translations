@@ -1,3 +1,10 @@
+## [0.1.4](https://github.com/hijuliancode/elevationteam-translations/compare/v0.1.3...v0.1.4) (2024-09-22)
+
+
+### Bug Fixes
+
+* improvements on translations method, add run, config files, init process ([5349812](https://github.com/hijuliancode/elevationteam-translations/commit/5349812137cc5dc7177ed8714b7734db3d81d25e))
+
 ## [0.1.3](https://github.com/hijuliancode/elevationteam-translations/compare/v0.1.2...v0.1.3) (2024-09-20)
 
 
