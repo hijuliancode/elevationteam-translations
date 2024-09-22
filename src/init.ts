@@ -8,27 +8,19 @@ const rl = readline.createInterface({
 });
 
 function question(query: string): Promise<string> {
-  return new Promise((resolve) => rl.question(query, resolve))
+  return new Promise((resolve) => rl.question(query, resolve));
 }
 
 export async function init() {
   console.log('Welcome to the Elevation Team Translation CLI!');
 
-  let baseLocale = (await question('Enter the base locale (e.g., en) [default: en]: ')) || 'en';
+  let defaultLanguage = (await question('Enter the base locale (e.g., en) [default: en]: ')) || 'en';
   let inputDir = (await question('Enter the input directory for translation files (e.g., src/translations) [default: src/translations]: ')) || 'src/translations';
   let outputDir = (await question('Enter the output directory for generated translation files (e.g., src/translations) [default: src/translations]: ')) || 'src/translations';
   let format = (await question('Enter the output format (e.g., json, js) [default: json]: ')) || 'json';
 
-  let locales: string[] = [];
-  let addMore = true;
-
-  while (addMore) {
-    const locale = await question('Enter a target locale (e.g., fr): ');
-    locales.push(locale);
-
-    const response = await question('Add another target locale? (y/n): ');
-    addMore = response === 'y';
-  }
+  const localesInput = await question('Enter target locales separated by space or comma (e.g., fr, es, de): ');
+  const languages = localesInput.split(/[\s,]+/).filter(locale => locale);
 
   const configPath = path.join(process.cwd(), 'translation.config.ts');
 
@@ -43,8 +35,8 @@ export async function init() {
   // Content for the configuration file
   const configContent = `
 export const translationConfig = {
-  baseLocale: ${baseLocale}, // Base language for translations
-  languages: ['${baseLocale}', ${locales.map(locale => `'${locale}'`).join(', ')}], // Target languages for translations
+  defaultLanguage: '${defaultLanguage}', // Base language for translations
+  languages: ['${defaultLanguage}', ${languages.map(locale => `'${locale}'`).join(', ')}], // Target languages for translations
   inputDir: '${inputDir}', // Directory for the base translation files
   outputDir: '${outputDir}', // Directory for the generated translation files
   format: '${format}', // Output format (e.g., json, js)
@@ -72,7 +64,7 @@ export const translationConfig = {
 
   // Add the "translation:watch" script to automatically watch for changes
   if (!packageJson.scripts['translation:watch']) {
-    packageJson.scripts['translation:watch'] = 'elevationteam-translation watch';
+    packageJson.scripts['translation:watch'] = '@elevationteam/translations watch';
     console.log('Script "translation:watch" added to package.json');
   } else {
     console.log('Script "translation:watch" already exists in package.json');
@@ -80,7 +72,7 @@ export const translationConfig = {
 
   // Add the "translation:run" script to manually run translations
   if (!packageJson.scripts['translation:run']) {
-    packageJson.scripts['translation:run'] = 'elevationteam-translation run';
+    packageJson.scripts['translation:run'] = '@elevationteam/translations run';
     console.log('Script "translation:run" added to package.json');
   } else {
     console.log('Script "translation:run" already exists in package.json');

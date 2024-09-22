@@ -6,7 +6,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "bin": {
-    "elevationteam-translations": "./dist/index.mjs"
+    "et-translations": "./dist/index.mjs"
   },
   "files": [
     "dist"

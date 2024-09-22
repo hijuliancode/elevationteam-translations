@@ -14,16 +14,21 @@ class OpenAIClient {
   }
 
   async translate(text: string, targetLanguage: string): Promise<string> {
+    const cleanedText = text.trim().replace(/\s+/g, ' '); // Preprocess the text to remove unnecessary spaces
+    
     try {
       const response = await this.opeanai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-3.5-turbo-0125',
         messages: [
-          { role: 'system', content: 'You are a helpful assistant that translates text.' },
-          { role: 'user', content: `Translate the following text to ${targetLanguage}: "${text}"` }
+          { role: 'system', content: 'Translate texts accurately' },
+          { role: 'user', content: `Translate to ${targetLanguage}: "${cleanedText}"` }
         ],
-      })
+        max_tokens: 100, // Limit the number of tokens in the response
+      });
+
+      console.log('OpenAI response:', response);
       return response.choices[0]?.message?.content?.trim() || '';
-    } catch(error) {
+    } catch (error) {
       console.error('Error translating text', error);
       return '';
     }

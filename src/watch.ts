@@ -1,52 +1,52 @@
 import fs from 'fs';
 import path from 'path';
 import { openAIClient } from './translate';
+import { TranslationConfig, BaseContent } from '../types/types';
 
-export async function watch(config: any) {
-  const { baseLocale, locales, inputDir, outputDir, format } = config;
+export async function watch(config: TranslationConfig): Promise<void> {
+  const { defaultLanguage, languages, inputDir, outputDir, format } = config;
 
-  const baseFilePath = path.join(process.cwd(), inputDir, `${baseLocale}.${format}`);
+  const baseFilePath = path.join(process.cwd(), inputDir, `${defaultLanguage}.${format}`);
 
-  // Check if base file exists before starting watch
   if (!fs.existsSync(baseFilePath)) {
     console.error(`Base file not found: ${baseFilePath}`);
     return;
   }
 
-  // Watch for changes in the base file
   fs.watch(baseFilePath, async (eventType) => {
     if (eventType === 'change') {
       console.log(`Changes detected in ${baseFilePath}`);
 
       try {
-        const baseContent = JSON.parse(fs.readFileSync(baseFilePath, 'utf-8'));
+        const baseContent: BaseContent = JSON.parse(fs.readFileSync(baseFilePath, 'utf-8'));
 
-        // Loop through all target locales except the base locale
-        for (const locale of locales) {
-          if (locale === baseLocale) continue;
+        for (const language of languages) {
+          if (language === defaultLanguage) continue;
 
-          const targetFilePath = path.join(process.cwd(), outputDir, `${locale}.${format}`);
+          const targetFilePath = path.join(process.cwd(), outputDir, `${language}.${format}`);
+          let existingTranslations: BaseContent = {};
 
-          // Load existing translation file if it exists
-          let existingTranslations: { [key: string]: string } = {};
           if (fs.existsSync(targetFilePath)) {
             existingTranslations = JSON.parse(fs.readFileSync(targetFilePath, 'utf-8'));
           }
 
-          // Create a new object to hold updated translations
-          const updatedTranslations: { [key: string]: string } = { ...existingTranslations };
+          const keysToTranslate = Object.entries(baseContent)
+            .filter(([key, value]) => !existingTranslations[key] || existingTranslations[key] !== value)
+            .map(([key, value]) => ({ key, value }));
 
-          // Translate each entry from the base file, updating only changed or new keys
-          for (const [key, value] of Object.entries(baseContent)) {
-            // Only update if the key doesn't exist or the translation is outdated
-            if (!existingTranslations[key] || existingTranslations[key] !== value) {
-              updatedTranslations[key] = await openAIClient.translate(value as string, locale);
-            }
+          if (keysToTranslate.length > 0) {
+            const translations = await Promise.all(
+              keysToTranslate.map(({ value }) => openAIClient.translate(value, language))
+            );
+
+            const updatedTranslations = { ...existingTranslations };
+            keysToTranslate.forEach(({ key }, index) => {
+              updatedTranslations[key] = translations[index];
+            });
+
+            fs.writeFileSync(targetFilePath, JSON.stringify(updatedTranslations, null, 2));
+            console.log(`Translation updated for ${language} at ${targetFilePath}`);
           }
-
-          // Write updated content back to the file
-          fs.writeFileSync(targetFilePath, JSON.stringify(updatedTranslations, null, 2));
-          console.log(`Translation updated for ${locale} at ${targetFilePath}`);
         }
       } catch (error) {
         console.error(`Error processing translations: ${(error as Error).message}`);

@@ -17,7 +17,6 @@ describe('OpenAI API Mock Call', () => {
       });
     };
 
-    // const response = await openAIClient.translate(inputText, targetLanguage);
     const response = await getMockTranslation(inputText, targetLanguage);
 
     console.log('Mock response:', response);
@@ -26,7 +25,7 @@ describe('OpenAI API Mock Call', () => {
   });
 
   afterAll(() => {
-    jest.restoreAllMocks(); // Restauramos las funciones mockeadas para evitar que afecten otros tests
+    jest.restoreAllMocks(); // Restore mocked functions to avoid affecting other tests
   });
 });
 
@@ -46,8 +45,12 @@ describe('OpenAI API Real Call', () => {
       expect(response).toContain('Hello');
     } catch (error) {
       console.error('OpenAI API Real Call Error:', error);
-      // Si la cuota es insuficiente, aseguramos que el test falle con un mensaje claro
-      expect(error.code).toBe('insufficient_quota');
+      // If the quota is insufficient, ensure the test fails with a clear message
+      if (error instanceof Error && 'code' in error) {
+        expect(error.code).toBe('insufficient_quota');
+      } else {
+        throw error;
+      }
     }
   });
 });
