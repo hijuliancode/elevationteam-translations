@@ -1,3 +1,10 @@
+## [0.1.5](https://github.com/hijuliancode/elevationteam-translations/compare/v0.1.4...v0.1.5) (2024-09-22)
+
+
+### Bug Fixes
+
+* improving run command, logic to read base file and target file ([dfec74c](https://github.com/hijuliancode/elevationteam-translations/commit/dfec74c3dded1d870f051936bccba31c35641b38))
+
 ## [0.1.4](https://github.com/hijuliancode/elevationteam-translations/compare/v0.1.3...v0.1.4) (2024-09-22)
 
 
