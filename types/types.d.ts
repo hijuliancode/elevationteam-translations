@@ -1,6 +1,6 @@
 export interface TranslationConfig {
   defaultLanguage: string;
-  languages: string[];
+  targetLanguages: string[];
   inputDir: string;
   outputDir: string;
   format: string;
@@ -8,6 +8,6 @@ export interface TranslationConfig {
 }
 
 export interface BaseContent {
-  [key: string]: string | BaseContent; // Soporta anidamiento
+  [key: string]: string | BaseContent; 
 }
 

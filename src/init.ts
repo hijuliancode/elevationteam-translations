@@ -15,22 +15,22 @@ export async function init() {
   console.log('Welcome to the Elevation Team Translation CLI!');
 
   let defaultLanguage = (await question('Enter the base locale (en): ')) || 'en';
-  const languagesInput = await question('Enter target locales separated by space or comma (es): ') || 'es';
-  const languages = languagesInput.split(/[\s,]+/).filter(locale => locale);
+  const targetLanguagesInput = await question('Enter target locales separated by space or comma (es): ') || 'es';
+  const targetLanguages = targetLanguagesInput.split(/[\s,]+/).filter(locale => locale);
 
   // Ensure the languages array has at least one language
-  if (languages.length === 0) {
-    languages.push(defaultLanguage);
+  if (targetLanguages.length === 0) {
+    targetLanguages.push(defaultLanguage);
   }
 
   // Check if the default language is included in the target languages
-  if (languages.includes(defaultLanguage)) {
+  if (targetLanguages.includes(defaultLanguage)) {
     console.log('Warning: The base language is also included in the target languages. Please select a different base language.');
     return;
   }
 
   // Check if the target languages are the same
-  if (languages.length === 1 && languages[0] === defaultLanguage) {
+  if (targetLanguages.length === 1 && targetLanguages[0] === defaultLanguage) {
     console.log('Warning: The target language is the same as the base language. Please select a different target language.');
     return;
   }
@@ -47,13 +47,14 @@ export async function init() {
     return;
   }
 
-  const aiProvider = (await question('Which AI provider do you want to use for translations? (openai): ')) || 'openai';
+  // const aiProvider = (await question('Which AI provider do you want to use for translations? (openai): ')) || 'openai';
+  const aiProvider = 'openai'; // TODO: Add support for multiple AI providers
 
   // Content for the configuration file
   const configContent = `
 export const translationConfig = {
   defaultLanguage: '${defaultLanguage}', // Base language for translations
-  languages: ['${defaultLanguage}', ${languages.map(locale => `'${locale}'`).join(', ')}], // Target languages for translations
+  languages: ['${defaultLanguage}', ${targetLanguages.map(locale => `'${locale}'`).join(', ')}], // Target languages for translations
   inputDir: '${inputDir}', // Directory for the base translation files
   outputDir: '${outputDir}', // Directory for the generated translation files
   format: '${format}', // Output format (e.g., json, js)

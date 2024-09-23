@@ -4,7 +4,7 @@ import { openAIClient } from './translate';
 import { TranslationConfig, BaseContent } from '../types/types';
 
 export async function run(config: TranslationConfig): Promise<void> {
-  const { defaultLanguage, languages, inputDir, outputDir, format } = config;
+  const { defaultLanguage, targetLanguages, inputDir, outputDir, format } = config;
 
   const baseFilePath = path.join(process.cwd(), inputDir, `${defaultLanguage}.${format}`);
 
@@ -16,7 +16,7 @@ export async function run(config: TranslationConfig): Promise<void> {
   try {
     const baseContent: BaseContent = JSON.parse(fs.readFileSync(baseFilePath, 'utf-8'));
 
-    for (const language of languages) {
+    for (const language of targetLanguages) {
       if (language === defaultLanguage) continue;
 
       const targetFilePath = path.join(process.cwd(), outputDir, `${language}.${format}`);

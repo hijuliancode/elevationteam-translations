@@ -2,7 +2,7 @@
 
 import { init } from './init';
 import { watch } from './watch';
-import { run } from './run'; // Asegúrate de tener implementado este archivo para ejecutar la traducción manual
+import { run } from './run';
 import path from 'path';
 import fs from 'fs';
 
@@ -33,7 +33,7 @@ if (command === 'init') {
 } else if (command === 'watch') {
   loadConfig().then(config => watch(config));
 } else if (command === 'run') {
-  loadConfig().then(config => run(config)); // Ejecuta la función de traducción manual
+  loadConfig().then(config => run(config));
 } else {
   console.log('Unknown command. Use "init", "watch", or "run".');
   process.exit(1);

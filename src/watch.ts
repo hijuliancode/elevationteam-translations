@@ -4,7 +4,7 @@ import { openAIClient } from './translate';
 import { TranslationConfig, BaseContent } from '../types/types';
 
 export async function watch(config: TranslationConfig): Promise<void> {
-  const { defaultLanguage, languages, inputDir, outputDir, format } = config;
+  const { defaultLanguage, targetLanguages: languages, inputDir, outputDir, format } = config;
 
   const baseFilePath = path.join(process.cwd(), inputDir, `${defaultLanguage}.${format}`);
 
