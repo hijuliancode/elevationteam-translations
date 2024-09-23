@@ -64,6 +64,7 @@
     "@semantic-release/git": "^10.0.1",
     "@types/jest": "^29.5.13",
     "@types/node": "^22.5.5",
+    "chokidar": "^4.0.1",
     "cz-conventional-changelog": "^3.3.0",
     "dotenv": "^16.4.5",
     "husky": "^9.1.6",

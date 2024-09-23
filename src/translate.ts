@@ -1,48 +1,67 @@
-import { OpenAI } from 'openai';
-import dotenv from 'dotenv';
+import { OpenAI } from 'openai'
+import { BaseContent } from '../types/types'
+import dotenv from 'dotenv'
 
-dotenv.config();
+dotenv.config()
 
-class OpenAIClient {
-  private opeanai: OpenAI;
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
 
-  constructor(apiKey: string, organization?: string) {
-    this.opeanai = new OpenAI({
-      apiKey,
-      organization,
-    })
-  }
+export async function translateContent (
+  baseContent: BaseContent,
+  existingTranslations: BaseContent,
+  targetLanguage: string
+): Promise<BaseContent> {
+  const updatedTranslations: BaseContent = { ...existingTranslations }
 
-  async translate(text: string, targetLanguage: string): Promise<string> {
-    const cleanedText = text.trim().replace(/\s+/g, ' '); // Preprocess the text to remove unnecessary spaces
-    
-    try {
-      const response = await this.opeanai.chat.completions.create({
-        model: 'gpt-3.5-turbo-0125',
-        messages: [
-          { role: 'system', content: 'Translate texts accurately' },
-          { role: 'user', content: `Translate to ${targetLanguage}: "${cleanedText}"` }
-        ],
-        max_tokens: 100, // Limit the number of tokens in the response
-      });
-
-      console.log('OpenAI response:', response);
-      console.log('response.choices:', response.choices);
-      console.log('response.choices[0]?.message:', response.choices[0]?.message);
-      return response.choices[0]?.message?.content?.trim() || '';
-    } catch (error) {
-      console.error('Error translating text', error);
-      process.exit(1);
+  for (const [key, value] of Object.entries(baseContent)) {
+    // Check if the value is a nested object
+    if (typeof value === 'string' && (!existingTranslations[key] || existingTranslations[key] !== value)) {
+      try {
+        const translatedValue = await translate(value, targetLanguage)
+        updatedTranslations[key] = translatedValue
+      } catch (error) {
+        console.error(`Error translating key: ${key} to ${targetLanguage}: ${(error as Error).message}`)
+      }
+    } else if (typeof value === 'object') {
+      updatedTranslations[key] = await translateContent(
+        value as BaseContent,
+        existingTranslations[key] as BaseContent,
+        targetLanguage
+      )
     }
   }
+
+  return updatedTranslations;
 }
 
-const apiKey = process.env.OPENAI_API_KEY;
-const organization = process.env.OPENAI_ORGANIZATION;
+async function translate(text: string, targetLanguage: string): Promise<string> {
 
-if (!apiKey) {
-  console.error('Error: OPENAI_API_KEY is required to use the OpenAI API');
-  process.exit(1);
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo-0125',
+      messages: [
+        { role: 'system', content: `You are a professional translator. Translate the following text to ${targetLanguage}:` },
+        { role: 'user', content: text }
+      ],
+      temperature: 0.3,
+      max_tokens: 100,
+    })
+
+    console.log('---')
+    console.log('response', response)
+    console.log('---')
+    console.log('response.choices', response.choices)
+    console.log('---')
+    console.log('response.choices[0]', response.choices[0])
+    console.log('---')
+    console.log('response.choices[0]?.message', response.choices[0]?.message)
+    console.log('---')
+
+    return response.choices[0]?.message?.content?.trim() || text
+  } catch (error) {
+    console.error('Error translating text:', (error as Error).message)
+    return text
+  }
 }
-
-export const openAIClient = new OpenAIClient(apiKey!, organization);

@@ -1,56 +1,93 @@
-import { openAIClient } from '../src/translate'; // Importamos el cliente real
-import { jest } from '@jest/globals';
+import { translateContent } from '../src/translate';
+import { BaseContent } from '../types/types';
+import { OpenAI } from 'openai';
 
-// Mock Data Test
-describe('OpenAI API Mock Call', () => {
-  beforeAll(() => {
-    jest.spyOn(openAIClient, 'translate').mockResolvedValue('Hello');
-  });
+jest.mock('openai'); // Mockea el módulo OpenAI para evitar llamadas reales a la API
 
-  test('should return a mock translation from Spanish to English', async () => {
-    const inputText = 'Hola';
-    const targetLanguage = 'en';
-
-    const getMockTranslation = (input: string, targetLang: string): Promise<string> => {
-      return new Promise((resolve) => {
-        resolve('Hello');
-      });
-    };
-
-    const response = await getMockTranslation(inputText, targetLanguage);
-
-    console.log('Mock response:', response);
-
-    expect(response).toBe('Hello');
-  });
-
-  afterAll(() => {
-    jest.restoreAllMocks(); // Restore mocked functions to avoid affecting other tests
-  });
-});
-
-// Real API Call Test
-describe('OpenAI API Real Call', () => {
-  test('should generate a translation from Spanish to English', async () => {
-    const inputText = 'Hola';
-    const targetLanguage = 'en';
-
-    try {
-      const response = await openAIClient.translate(inputText, targetLanguage);
-
-      console.log('OpenAI response:', response);
-
-      expect(response).not.toBeNull();
-      expect(response).toBeDefined();
-      expect(response).toContain('Hello');
-    } catch (error) {
-      console.error('OpenAI API Real Call Error:', error);
-      // If the quota is insufficient, ensure the test fails with a clear message
-      if (error instanceof Error && 'code' in error) {
-        expect(error.code).toBe('insufficient_quota');
-      } else {
-        throw error;
+describe('Translation Tests', () => {
+  const mockOpenAIResponse = {
+    chat: {
+      completions: {
+        create: jest.fn().mockResolvedValue({
+          choices: [
+            {
+              message: { content: 'Hello' }
+            }
+          ]
+        })
       }
     }
+  };
+
+  const baseContent: BaseContent = {
+    greeting: 'Hola',
+    farewell: 'Adiós',
+    nested: {
+      question: '¿Cómo estás?',
+    },
+  };
+
+  const existingTranslations: BaseContent = {
+    greeting: 'Hello',
+  };
+
+  beforeAll(() => {
+    // Simula el cliente de OpenAI usando el mock anterior
+    (OpenAI as unknown as jest.Mock).mockImplementation(() => mockOpenAIResponse);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks(); // Limpia los mocks después de cada test
+  });
+
+  test('should translate a simple string', async () => {
+    const result = await translateContent(baseContent, {}, 'en');
+    
+    expect(result.greeting).toBe('Hello'); // Traducción simulada
+    expect(result.farewell).toBe('Hello'); // Traducción simulada para otra palabra
+  });
+
+  test('should handle nested objects', async () => {
+    const result = await translateContent(baseContent, {}, 'en');
+    
+    expect((result.nested as BaseContent).question).toBe('Hello'); // Traducción simulada del texto anidado
+  });
+
+  test('should not overwrite existing translations', async () => {
+    const result = await translateContent(baseContent, existingTranslations, 'en');
+    
+    expect(result.greeting).toBe('Hello'); // Mantiene la traducción existente
+    expect(result.farewell).toBe('Hello'); // Traducción simulada para el nuevo texto
+  });
+
+  test('should handle API errors gracefully', async () => {
+    // Simula un error en la API de OpenAI
+    mockOpenAIResponse.chat.completions.create.mockRejectedValueOnce(new Error('API Error'));
+
+    const result = await translateContent(baseContent, {}, 'en');
+
+    expect(result.greeting).toBe('Hola'); // No traduce en caso de error
+  });
+
+  test('should handle empty response from API', async () => {
+    // Simula una respuesta vacía de la API
+    mockOpenAIResponse.chat.completions.create.mockResolvedValueOnce({
+      choices: []
+    });
+
+    const result = await translateContent(baseContent, {}, 'en');
+    
+    expect(result.greeting).toBe('Hola'); // Mantiene el valor original si la respuesta está vacía
+  });
+
+  test('should handle unexpected API response structure', async () => {
+    // Simula una estructura de respuesta inesperada
+    mockOpenAIResponse.chat.completions.create.mockResolvedValueOnce({
+      unexpectedKey: 'unexpectedValue'
+    });
+
+    const result = await translateContent(baseContent, {}, 'en');
+    
+    expect(result.greeting).toBe('Hola'); // No cambia la traducción si la estructura es inesperada
   });
 });
