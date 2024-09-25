@@ -15,6 +15,16 @@ function question(query: string): Promise<string> {
 export async function init() {
   console.log('Welcome to the Elevation Team Translation CLI!')
 
+  // Check if package.json exists before modifying it
+  const packageJsonPath = path.join(process.cwd(), 'package.json')
+
+  if (!fs.existsSync(packageJsonPath)) {
+    console.error('Error: package.json not found. Please ensure you are in a Node.js project.')
+    return
+  }
+
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+
   let baseLanguage = (await question('Enter the base language (en): ')) || 'en'
   const targetLanguagesInput = await question('Enter target locales separated by space or comma (es): ') || 'es'
   const targetLanguages = targetLanguagesInput.split(/[\s,]+/).filter(locale => locale)
@@ -35,11 +45,13 @@ export async function init() {
 
   let inputDir = (await question('Enter the input directory when the baseFile is located (src/translations): ')) || 'src/translations'
   let outputDir = (await question('Enter the output directory for generated translation files (src/translations): ')) || 'src/translations'
-  let format = (await question('Enter the output format js or json (json): ')) || 'json'
+  
+  // let format = (await question('Enter the output format js or json (json): ')) || 'json'
+  let format = 'json' // TODO: Add support for multiple output formats
 
   // Check if the config file already exists
   if (fs.existsSync(configPath)) {
-    console.log('Config file already exists at translation.config.js')
+    console.log('Config file already exists at translations.config.js')
     return
   }
 
@@ -50,7 +62,7 @@ export async function init() {
   const configContent = `
 export const translationConfig = {
   defaultLanguage: '${baseLanguage}', // Base language for translations
-  languages: ['${baseLanguage}', ${targetLanguages.map(locale => `'${locale}'`).join(', ')}], // Target languages for translations
+  languages: [${targetLanguages.map(locale => locale !== baseLanguage && `'${locale}'`).join(', ')}], // Target languages for translations
   inputDir: '${inputDir}', // Directory for the base translation files
   outputDir: '${outputDir}', // Directory for the generated translation files
   format: '${format}', // Output format (e.g., json, js)
@@ -61,17 +73,7 @@ export const translationConfig = {
 
   // Create the configuration file
   fs.writeFileSync(configPath, configContent)
-  console.log('Config file created successfully at translation.config.js')
-
-  // Check if package.json exists before modifying it
-  const packageJsonPath = path.join(process.cwd(), 'package.json')
-
-  if (!fs.existsSync(packageJsonPath)) {
-    console.error('Error: package.json not found. Please ensure you are in a Node.js project.')
-    return
-  }
-
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+  console.log('Config file created successfully at translations.config.js')
 
   // Add translation scripts if they do not already exist
   packageJson.scripts = packageJson.scripts || {}

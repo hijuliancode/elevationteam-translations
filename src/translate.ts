@@ -1,5 +1,5 @@
 import { OpenAI } from 'openai'
-import { BaseContent } from '../types/types'
+import { ITranslationContent } from './types'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -9,13 +9,13 @@ const openai = new OpenAI({
 })
 
 export async function translateContent (
-  baseContent: BaseContent,
-  existingTranslations: BaseContent,
+  ITranslationContent: ITranslationContent,
+  existingTranslations: ITranslationContent,
   targetLanguage: string
-): Promise<BaseContent> {
-  const updatedTranslations: BaseContent = { ...existingTranslations }
+): Promise<ITranslationContent> {
+  const updatedTranslations: ITranslationContent = { ...existingTranslations }
 
-  for (const [key, value] of Object.entries(baseContent)) {
+  for (const [key, value] of Object.entries(ITranslationContent)) {
     // Check if the value is a nested object
     if (typeof value === 'string' && (!existingTranslations[key] || existingTranslations[key] !== value)) {
       try {
@@ -26,8 +26,8 @@ export async function translateContent (
       }
     } else if (typeof value === 'object') {
       updatedTranslations[key] = await translateContent(
-        value as BaseContent,
-        existingTranslations[key] as BaseContent,
+        value as ITranslationContent,
+        existingTranslations[key] as ITranslationContent,
         targetLanguage
       )
     }

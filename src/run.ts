@@ -1,6 +1,6 @@
-import { TranslationConfig  } from "../types/types"
+import { ITranslationConfig  } from "./types"
 import { processTranslations } from "./utils"
 
-export async function run(config: TranslationConfig): Promise<void> {
+export async function run(config: ITranslationConfig): Promise<void> {
   await processTranslations(config)
 }

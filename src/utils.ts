@@ -1,16 +1,16 @@
 import path from 'path'
 import fs from 'fs'
-import { BaseContent, TranslationConfig } from '../types/types'
+import { ITranslationContent, ITranslationConfig } from './types'
 import { translateContent } from './translate'
 
 // Define the path to the configuration file
-export const configPath = path.join(process.cwd(), 'translation.config.js')
+export const configPath = path.join(process.cwd(), 'translations.config.js')
 
-export async function loadConfig(): Promise<TranslationConfig> {
+export async function loadConfig(): Promise<ITranslationConfig> {
   try {
     // Ensure the config file exists
     if (!fs.existsSync(configPath)) {
-      console.log('Error: translation.config.js not found.')
+      console.log('Error: translations.config.js not found.')
       process.exit(1)
     }
     // Loading and returning the configuration
@@ -22,7 +22,7 @@ export async function loadConfig(): Promise<TranslationConfig> {
   }
 }
 
-export async function processTranslations(config: TranslationConfig): Promise<void> {
+export async function processTranslations(config: ITranslationConfig): Promise<void> {
   const { defaultLanguage, targetLanguages, inputDir, outputDir, format, aiProvider } = config
   const baseFilePath = path.join(process.cwd(), inputDir, `${defaultLanguage}.${format}`)
 
@@ -32,7 +32,7 @@ export async function processTranslations(config: TranslationConfig): Promise<vo
   }
 
   try {
-    const baseContent: BaseContent = JSON.parse(fs.readFileSync(baseFilePath, 'utf-8'))
+    const ITranslationContent: ITranslationContent = JSON.parse(fs.readFileSync(baseFilePath, 'utf-8'))
 
     for (const language of targetLanguages) {
       // Skip the default language
@@ -41,13 +41,16 @@ export async function processTranslations(config: TranslationConfig): Promise<vo
       // Define the path to the target translation file
       const targetFilePath = path.join(process.cwd(), outputDir, `${language}.${format}`)
 
-      let existingTranslations: BaseContent = {}
+      let existingTranslations: ITranslationContent = {}
       // Load the existing translations from the target file if it exists
       if (fs.existsSync(targetFilePath)) {
         existingTranslations = JSON.parse(fs.readFileSync(targetFilePath, 'utf-8'))
       }
 
-      const updateTranslations = await translateContent(baseContent, existingTranslations, language)
+      const updateTranslations = await translateContent(ITranslationContent, existingTranslations, language)
+
+      fs.writeFileSync(targetFilePath, JSON.stringify(updateTranslations, null, 2))
+      console.log(`Translations updated for ${language} at ${targetFilePath}`)
     }
 
   } catch (error) {

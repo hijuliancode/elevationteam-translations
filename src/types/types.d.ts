@@ -1,4 +1,4 @@
-export interface TranslationConfig {
+export interface ITranslationConfig {
   defaultLanguage: string;
   targetLanguages: string[];
   inputDir: string;
@@ -7,7 +7,6 @@ export interface TranslationConfig {
   aiProvider: string;
 }
 
-export interface BaseContent {
-  [key: string]: string | BaseContent; 
+export interface ITranslationContent {
+  [key: string]: string | ITranslationContent; 
 }
-

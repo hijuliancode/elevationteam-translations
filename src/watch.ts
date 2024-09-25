@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 import chokidar from 'chokidar'
-import { TranslationConfig } from '../types/types'
+import { ITranslationConfig } from './types'
 import { processTranslations } from './utils'
 
-export async function watch(config: TranslationConfig): Promise<void> {
+export async function watch(config: ITranslationConfig): Promise<void> {
   const { defaultLanguage, inputDir, format } = config
   const baseFilePath = path.join(process.cwd(), inputDir, `${defaultLanguage}.${format}`)
 
