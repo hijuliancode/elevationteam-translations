@@ -38,6 +38,8 @@ describe('Translation Tests', () => {
 
   const existingTranslations: ITranslationContent = {
     brand: 'ElevationTeam',
+    heroTitle: 'Bienvenido al Elevation Team Translation CLI!',
+    description: 'Esta es una herramienta CLI simple para ayudarlo a administrar traducciones para sus proyectos.',
   };
 
   beforeAll(() => {
