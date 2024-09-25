@@ -45,18 +45,12 @@ export async function init() {
 
   let inputDir = (await question('Enter the input directory when the baseFile is located (src/translations): ')) || 'src/translations'
   let outputDir = (await question('Enter the output directory for generated translation files (src/translations): ')) || 'src/translations'
-  
-  // let format = (await question('Enter the output format js or json (json): ')) || 'json'
-  let format = 'json' // TODO: Add support for multiple output formats
 
   // Check if the config file already exists
   if (fs.existsSync(configPath)) {
     console.log('Config file already exists at translations.config.js')
     return
   }
-
-  // const aiProvider = (await question('Which AI provider do you want to use for translations? (openai): ')) || 'openai'
-  const aiProvider = 'openai' // TODO: Add support for multiple AI providers
 
   // Content for the configuration file
   const configContent = `
@@ -65,8 +59,6 @@ export const translationConfig = {
   languages: [${targetLanguages.map(locale => locale !== baseLanguage && `'${locale}'`).join(', ')}], // Target languages for translations
   inputDir: '${inputDir}', // Directory for the base translation files
   outputDir: '${outputDir}', // Directory for the generated translation files
-  format: '${format}', // Output format (e.g., json, js)
-  aiProvider: '${aiProvider}', // AI provider for translations
 }
 
 `

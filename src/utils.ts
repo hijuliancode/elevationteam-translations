@@ -23,8 +23,8 @@ export async function loadConfig(): Promise<ITranslationConfig> {
 }
 
 export async function processTranslations(config: ITranslationConfig): Promise<void> {
-  const { defaultLanguage, targetLanguages, inputDir, outputDir, format, aiProvider } = config
-  const baseFilePath = path.join(process.cwd(), inputDir, `${defaultLanguage}.${format}`)
+  const { defaultLanguage, targetLanguages, inputDir, outputDir } = config
+  const baseFilePath = path.join(process.cwd(), inputDir, `${defaultLanguage}.json`)
 
   if (!fs.existsSync(baseFilePath)) {
     console.error(`Error: Base translation file not found at ${baseFilePath}`)
@@ -39,7 +39,7 @@ export async function processTranslations(config: ITranslationConfig): Promise<v
       if (language === defaultLanguage) continue
 
       // Define the path to the target translation file
-      const targetFilePath = path.join(process.cwd(), outputDir, `${language}.${format}`)
+      const targetFilePath = path.join(process.cwd(), outputDir, `${language}.json`)
 
       let existingTranslations: ITranslationContent = {}
       // Load the existing translations from the target file if it exists

@@ -5,8 +5,8 @@ import { ITranslationConfig } from './types'
 import { processTranslations } from './utils'
 
 export async function watch(config: ITranslationConfig): Promise<void> {
-  const { defaultLanguage, inputDir, format } = config
-  const baseFilePath = path.join(process.cwd(), inputDir, `${defaultLanguage}.${format}`)
+  const { defaultLanguage, inputDir } = config
+  const baseFilePath = path.join(process.cwd(), inputDir, `${defaultLanguage}.json`)
 
   if (!fs.existsSync(baseFilePath)) {
     console.error(`Error: Base translation file not found at ${baseFilePath}`)

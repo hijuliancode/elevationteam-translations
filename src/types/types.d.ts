@@ -3,8 +3,6 @@ export interface ITranslationConfig {
   targetLanguages: string[];
   inputDir: string;
   outputDir: string;
-  format: string;
-  aiProvider: string;
 }
 
 export interface ITranslationContent {
