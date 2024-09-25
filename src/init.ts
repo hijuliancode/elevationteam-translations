@@ -13,55 +13,68 @@ function question(query: string): Promise<string> {
 }
 
 export async function init() {
-  console.log('Welcome to the Elevation Team Translation CLI!')
+  console.log('Welcome to the ElevationTeam Translation CLI!')
 
   // Check if package.json exists before modifying it
   const packageJsonPath = path.join(process.cwd(), 'package.json')
 
   if (!fs.existsSync(packageJsonPath)) {
     console.error('Error: package.json not found. Please ensure you are in a Node.js project.')
-    return
+    process.exit(1)
   }
 
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
 
-  let baseLanguage = (await question('Enter the base language (en): ')) || 'en'
-  const targetLanguagesInput = await question('Enter target locales separated by space or comma (es): ') || 'es'
-  const targetLanguages = targetLanguagesInput.split(/[\s,]+/).filter(locale => locale)
-
-  // Check if the default language is included in the target languages
-  if (targetLanguages.includes(baseLanguage)) {
-    console.log('Warning: The base language is included in the target languages. Removing it from the target languages...')
-    // Remove the default language from the target languages
-    targetLanguages.splice(targetLanguages.indexOf(baseLanguage), 1)
-    return
-  }
-
-  // Check if the target languages are the same
-  if (targetLanguages.length === 1 && targetLanguages[0] === baseLanguage) {
-    console.log('Warning: The target language is the same as the base language. Please select a different target language.')
-    return
-  }
-
-  let inputDir = (await question('Enter the input directory when the baseFile is located (src/translations): ')) || 'src/translations'
-  let outputDir = (await question('Enter the output directory for generated translation files (src/translations): ')) || 'src/translations'
-
   // Check if the config file already exists
   if (fs.existsSync(configPath)) {
-    console.log('Config file already exists at translations.config.js')
-    return
+    const overwrite = await question('Config file already exists at translations.config.js, do you want to overwrite it?: (no) ') || 'n'
+
+    if (overwrite.toLowerCase() !== 'yes' && overwrite.toLowerCase() !== 'y') {
+      console.log('Exiting...')
+      process.exit(0)
+    }
+
+    // Remove the existing config file
+    fs.unlinkSync(configPath)
   }
 
+
+  let baseLanguage = (await question('Enter the base language: (en) ')) || 'en'
+
+  const targetLanguagesInput = await question('Enter target locales separated by space or comma: (es) ') || 'es'
+  const targetLanguages = targetLanguagesInput.split(/[\s,]+/).filter(locale => locale)
+
+  let inputDir = (await question('Enter the input directory when the baseFile is located: (src/translations) ')) || 'src/translations'
+  let outputDir = (await question('Enter the output directory for generated translation files: (src/translations) ')) || 'src/translations'
+
+  // format languages, delete base language from target languages and duplicate languages
+  const formatLanguages = (languages: string[]) => {
+    console.log('formatting languages...')
+    return languages
+      .filter((language, index) => language !== baseLanguage && languages.indexOf(language) === index)
+      .map(language => `'${language}'`)
+  }
+  
   // Content for the configuration file
   const configContent = `
 export const translationConfig = {
   defaultLanguage: '${baseLanguage}', // Base language for translations
-  languages: [${targetLanguages.map(locale => locale !== baseLanguage && `'${locale}'`).join(', ')}], // Target languages for translations
-  inputDir: '${inputDir}', // Directory for the base translation files
+  languages: [${formatLanguages(targetLanguages)}], // Target languages for translations
+  inputDir: '${inputDir}', // Directory where is the base translation file
   outputDir: '${outputDir}', // Directory for the generated translation files
 }
 
 `
+
+  // Ask the user if the configuration ok
+  const confirm = await question(`About to write to ${configPath}:
+${configContent}
+Is this OK? (yes) `) || 'y'
+
+  if (confirm.toLowerCase() !== 'y') {
+    console.log('Aborted.')
+    process.exit(0)
+  }
 
   // Create the configuration file
   fs.writeFileSync(configPath, configContent)
