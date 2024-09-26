@@ -56,14 +56,12 @@ export async function init() {
   }
   
   // Content for the configuration file
-  const configContent = `
-export const translationConfig = {
+  const configContent = `export const translationConfig = {
   defaultLanguage: '${baseLanguage}', // Base language for translations
   languages: [${formatLanguages(targetLanguages)}], // Target languages for translations
   inputDir: '${inputDir}', // Directory where is the base translation file
   outputDir: '${outputDir}', // Directory for the generated translation files
 }
-
 `
 
   // Ask the user if the configuration ok
