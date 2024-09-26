@@ -53,6 +53,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
+    "chokidar": "^4.0.1",
     "openai": "^4.62.1"
   },
   "devDependencies": {
