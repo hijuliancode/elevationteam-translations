@@ -1,5 +1,5 @@
 import { translateContent } from '../translate';
-import { ITranslationContent } from '../types';
+import { ITranslationContent } from '../types/types';
 import { OpenAI } from 'openai';
 
 jest.mock('openai'); // Mock the module to prevent actual API calls

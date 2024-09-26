@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import chokidar from 'chokidar'
-import { ITranslationConfig } from './types'
+import { ITranslationConfig } from './types/types'
 import { processTranslations } from './utils'
 
 export async function watch(config: ITranslationConfig): Promise<void> {

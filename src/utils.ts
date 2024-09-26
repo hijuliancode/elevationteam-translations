@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import { ITranslationContent, ITranslationConfig } from './types'
+import { ITranslationContent, ITranslationConfig } from './types/types'
 import { translateContent } from './translate'
 
 // Define the path to the configuration file

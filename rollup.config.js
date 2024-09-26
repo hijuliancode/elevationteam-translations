@@ -23,14 +23,12 @@ export default [
         format: 'cjs',
         exports: 'named',
       },
-    ]
+    ],
+    external: ['fs', 'path', 'readline', 'dotenv', 'openai', 'chokidar'],
   },
   {
-    input: 'src/index.ts',
+    input: 'src/types/index.d.ts',
+    output: [{ file: 'dist/index.d.ts', format: 'es', }],
     plugins: [dts()],
-    output: {
-      file: 'dist/index.d.ts',
-      format: 'es',
-    },
-  }
+  },
 ];

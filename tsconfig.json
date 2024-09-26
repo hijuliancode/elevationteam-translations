@@ -14,7 +14,7 @@
     "skipLibCheck": true,
     "typeRoots": ["./node_modules/@types", "src/types"],
     "composite": false,
-    "declarationDir": null
+    "declarationDir": "./src/types"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.ts", "dist"]

@@ -1,5 +1,5 @@
 import { OpenAI } from 'openai'
-import { ITranslationContent } from './types'
+import { ITranslationContent } from './types/types'
 import dotenv from 'dotenv'
 
 dotenv.config()
