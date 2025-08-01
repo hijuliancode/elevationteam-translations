@@ -1,103 +1,104 @@
-import fs from 'fs';
-import path from 'path';
-import readline from 'readline';
+import fs from 'fs'
+import path from 'path'
+import readline from 'readline'
+import { configPath } from './utils'
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
-});
+})
 
 function question(query: string): Promise<string> {
-  return new Promise((resolve) => rl.question(query, resolve));
+  return new Promise((resolve) => rl.question(query, resolve))
 }
 
 export async function init() {
-  console.log('Welcome to the Elevation Team Translation CLI!');
+  console.log('Welcome to the ElevationTeam Translation CLI!')
 
-  let defaultLanguage = (await question('Enter the base locale (en): ')) || 'en';
-  const targetLanguagesInput = await question('Enter target locales separated by space or comma (es): ') || 'es';
-  const targetLanguages = targetLanguagesInput.split(/[\s,]+/).filter(locale => locale);
+  // Check if package.json exists before modifying it
+  const packageJsonPath = path.join(process.cwd(), 'package.json')
 
-  // Ensure the languages array has at least one language
-  if (targetLanguages.length === 0) {
-    targetLanguages.push(defaultLanguage);
+  if (!fs.existsSync(packageJsonPath)) {
+    console.error('Error: package.json not found. Please ensure you are in a Node.js project.')
+    process.exit(1)
   }
 
-  // Check if the default language is included in the target languages
-  if (targetLanguages.includes(defaultLanguage)) {
-    console.log('Warning: The base language is also included in the target languages. Please select a different base language.');
-    return;
-  }
-
-  // Check if the target languages are the same
-  if (targetLanguages.length === 1 && targetLanguages[0] === defaultLanguage) {
-    console.log('Warning: The target language is the same as the base language. Please select a different target language.');
-    return;
-  }
-
-  let inputDir = (await question('Enter the input directory when the baseFile is located (src/translations): ')) || 'src/translations';
-  let outputDir = (await question('Enter the output directory for generated translation files (src/translations): ')) || 'src/translations';
-  let format = (await question('Enter the output format js or json (json): ')) || 'json';
-
-  const configPath = path.join(process.cwd(), 'translation.config.js');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
 
   // Check if the config file already exists
   if (fs.existsSync(configPath)) {
-    console.log('Config file already exists at translation.config.js');
-    return;
+    const overwrite = await question('Config file already exists at translations.config.js, do you want to overwrite it?: (no) ') || 'n'
+
+    if (overwrite.toLowerCase() !== 'yes' && overwrite.toLowerCase() !== 'y') {
+      console.log('Exiting...')
+      process.exit(0)
+    }
+
+    // Remove the existing config file
+    fs.unlinkSync(configPath)
   }
 
-  // const aiProvider = (await question('Which AI provider do you want to use for translations? (openai): ')) || 'openai';
-  const aiProvider = 'openai'; // TODO: Add support for multiple AI providers
 
+  let baseLanguage = (await question('Enter the base language: (en) ')) || 'en'
+
+  const targetLanguagesInput = await question('Enter target locales separated by space or comma: (es) ') || 'es'
+  const targetLanguages = targetLanguagesInput.split(/[\s,]+/).filter(locale => locale)
+
+  let inputDir = (await question('Enter the input directory when the baseFile is located: (src/translations) ')) || 'src/translations'
+  let outputDir = (await question('Enter the output directory for generated translation files: (src/translations) ')) || 'src/translations'
+
+  // format languages, delete base language from target languages and duplicate languages
+  const formatLanguages = (languages: string[]) => {
+    console.log('formatting languages...')
+    return languages
+      .filter((language, index) => language !== baseLanguage && languages.indexOf(language) === index)
+      .map(language => `'${language}'`)
+  }
+  
   // Content for the configuration file
-  const configContent = `
-export const translationConfig = {
-  defaultLanguage: '${defaultLanguage}', // Base language for translations
-  languages: ['${defaultLanguage}', ${targetLanguages.map(locale => `'${locale}'`).join(', ')}], // Target languages for translations
-  inputDir: '${inputDir}', // Directory for the base translation files
+  const configContent = `export const translationConfig = {
+  defaultLanguage: '${baseLanguage}', // Base language for translations
+  languages: [${formatLanguages(targetLanguages)}], // Target languages for translations
+  inputDir: '${inputDir}', // Directory where is the base translation file
   outputDir: '${outputDir}', // Directory for the generated translation files
-  format: '${format}', // Output format (e.g., json, js)
-  aiProvider: '${aiProvider}', // AI provider for translations
-};
+}
+`
 
-`;
+  // Ask the user if the configuration ok
+  const confirm = await question(`About to write to ${configPath}:
+${configContent}
+Is this OK? (yes) `) || 'y'
+
+  if (confirm.toLowerCase() !== 'y') {
+    console.log('Aborted.')
+    process.exit(0)
+  }
 
   // Create the configuration file
-  fs.writeFileSync(configPath, configContent);
-  console.log('Config file created successfully at translation.config.js');
-
-  // Check if package.json exists before modifying it
-  const packageJsonPath = path.join(process.cwd(), 'package.json');
-
-  if (!fs.existsSync(packageJsonPath)) {
-    console.error('Error: package.json not found. Please ensure you are in a Node.js project.');
-    return;
-  }
-
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+  fs.writeFileSync(configPath, configContent)
+  console.log('Config file created successfully at translations.config.js')
 
   // Add translation scripts if they do not already exist
-  packageJson.scripts = packageJson.scripts || {};
-
-  // Add the "translation:watch" script to automatically watch for changes
-  if (!packageJson.scripts['translation:watch']) {
-    packageJson.scripts['translation:watch'] = 'et-translations watch';
-    console.log('Script "translation:watch" added to package.json');
-  } else {
-    console.log('Script "translation:watch" already exists in package.json');
-  }
+  packageJson.scripts = packageJson.scripts || {}
 
   // Add the "translation:run" script to manually run translations
   if (!packageJson.scripts['translation:run']) {
-    packageJson.scripts['translation:run'] = 'et-translations run';
-    console.log('Script "translation:run" added to package.json');
+    packageJson.scripts['translation:run'] = 'et-translations run'
+    console.log('Script "translation:run" added to package.json')
   } else {
-    console.log('Script "translation:run" already exists in package.json');
+    console.log('Script "translation:run" already exists in package.json')
+  }
+
+  // Add the "translation:watch" script to automatically watch for changes
+  if (!packageJson.scripts['translation:watch']) {
+    packageJson.scripts['translation:watch'] = 'et-translations watch'
+    console.log('Script "translation:watch" added to package.json')
+  } else {
+    console.log('Script "translation:watch" already exists in package.json')
   }
 
   // Save changes to package.json
-  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
 
-  rl.close();
+  rl.close()
 }
