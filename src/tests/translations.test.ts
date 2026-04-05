@@ -1,78 +1,57 @@
-import { translateContent } from '../translate';
-import { ITranslationContent } from '../types/types';
-import { OpenAI } from 'openai';
+import { translateKeys } from '../translate';
+import { ITranslationProvider } from '../providers/ITranslationProvider';
 
-jest.mock('openai'); // Mock the module to prevent actual API calls
+function makeMockProvider(responseMap: Record<string, string>): ITranslationProvider {
+  return {
+    translate: jest.fn().mockImplementation((text: string) =>
+      Promise.resolve(responseMap[text] ?? text)
+    ),
+  };
+}
 
 describe('Translation Tests', () => {
-  // Mock the OpenAI API response
-  const mockOpenAIResponse = {
-    chat: {
-      completions: {
-        create: jest.fn().mockResolvedValue({
-          choices: [
-            {
-              message: { content: 'Hello' }
-            }
-          ]
-        })
-      }
-    }
-  };
-
-  const ITranslationContent: ITranslationContent = {
-    brand: 'ElevationTeam',
-    heroTitle: 'Welcome to the Elevation Team Translation CLI!',
-    description: 'This is a simple CLI tool to help you manage translations for your projects.',
-    menu: {
-      home: 'Home',
-      about: 'About',
-      contact: 'Contact',
-      account: 'Account',
-    },
-    footer: {
-      privacy: 'Privacy Policy',
-      terms: 'Terms of Service',
-    },
-  };
-
-  const existingTranslations: ITranslationContent = {
-    brand: 'ElevationTeam',
-    heroTitle: 'Bienvenido al Elevation Team Translation CLI!',
-    description: 'Esta es una herramienta CLI simple para ayudarlo a administrar traducciones para sus proyectos.',
-  };
-
-  beforeAll(() => {
-    // Set the mock implementation for OpenAI
-    (OpenAI as unknown as jest.Mock).mockImplementation(() => mockOpenAIResponse);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks(); 
-  });
+  afterEach(() => jest.clearAllMocks());
 
   test('should translate a simple string', async () => {
+    const provider = makeMockProvider({ 'Hello': 'Hola' });
+    const result = await translateKeys({ greeting: 'Hello' }, 'es', provider);
+    expect(result['greeting']).toBe('Hola');
   });
 
-  test('should handle nested objects', async () => {
+  test('should translate all keys in a flat record', async () => {
+    const provider = makeMockProvider({ 'Home': 'Inicio', 'About': 'Acerca de' });
+    const result = await translateKeys({ home: 'Home', about: 'About' }, 'es', provider);
+    expect(result['home']).toBe('Inicio');
+    expect(result['about']).toBe('Acerca de');
   });
 
-  test('should not overwrite existing translations', async () => {
+  test('should handle API errors gracefully, returning original text', async () => {
+    const provider: ITranslationProvider = {
+      translate: jest.fn().mockRejectedValue(new Error('API Error')),
+    };
+    const result = await translateKeys({ greeting: 'Hello' }, 'es', provider);
+    expect(result['greeting']).toBe('Hello');
   });
 
-  test('should handle API errors gracefully', async () => {
-    mockOpenAIResponse.chat.completions.create.mockRejectedValueOnce(new Error('API Error'));
+  test('should return empty object for empty input', async () => {
+    const provider = makeMockProvider({});
+    const result = await translateKeys({}, 'es', provider);
+    expect(result).toEqual({});
+    expect(provider.translate).not.toHaveBeenCalled();
   });
 
-  test('should handle empty response from API', async () => {
-    mockOpenAIResponse.chat.completions.create.mockResolvedValueOnce({
-      choices: []
-    });
+  test('should pass the correct target language to provider', async () => {
+    const provider = makeMockProvider({});
+    (provider.translate as jest.Mock).mockResolvedValue('Bonjour');
+    await translateKeys({ greeting: 'Hello' }, 'fr', provider);
+    expect(provider.translate).toHaveBeenCalledWith('Hello', 'fr');
   });
 
-  test('should handle unexpected API response structure', async () => {
-    mockOpenAIResponse.chat.completions.create.mockResolvedValueOnce({
-      unexpectedKey: 'unexpectedValue'
-    });
+  test('should fall back to original text when provider returns empty string', async () => {
+    const provider: ITranslationProvider = {
+      translate: jest.fn().mockResolvedValue(''),
+    };
+    const result = await translateKeys({ greeting: 'Hello' }, 'es', provider);
+    expect(result['greeting']).toBe('Hello');
   });
 });

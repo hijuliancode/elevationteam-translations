@@ -24,7 +24,7 @@ export default [
         exports: 'named',
       },
     ],
-    external: ['fs', 'path', 'readline', 'dotenv', 'openai', 'chokidar'],
+    external: ['fs', 'path', 'readline', 'crypto', 'openai', '@anthropic-ai/sdk', 'chokidar'],
   },
   {
     input: 'src/types/index.d.ts',

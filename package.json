@@ -53,6 +53,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.82.0",
     "chokidar": "^4.0.1",
     "openai": "^4.62.1"
   },
@@ -90,7 +91,7 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "testMatch": [
-      "/**/*.test.ts"
+      "**/*.test.ts"
     ]
   },
   "release": {
